@@ -1,0 +1,32 @@
+version: '3'
+services:
+  influxdb:
+    image: influxdb
+    ports:
+    - 8086:8086
+    environment:
+    - INFLUXDB_DB="sensor-db"
+    - INFLUXDB_USER=<pw>
+    - INFLUXDB_USER_PASSWORD=<pw>
+  mqtt:
+    image: eclipse-mosquitto
+    ports:
+    - 1883:1883
+    - 9001:9001
+  processing:
+    build: ./processing
+    image: processing
+    depends_on:
+    - influxdb
+    - mqtt
+    environment:
+    - INFLUXDB_HOST=http://influxdb:8086
+    - INFLUXDB_USER=<user>
+    - INFLUXDB_PASSWORD=<pw>
+    - INFLUXDB_DB=sensor-db
+    - MQTT_HOST=tcp://mqtt:1883
+    - MQTT_TOPICS=host/+/sensor/#
+  grafana:
+    image: grafana/grafana
+    ports:
+    - 3000:3000

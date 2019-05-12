@@ -1,0 +1,12 @@
+apiVersion: 1
+
+datasources:
+- name: InfluxDB
+  type: influxdb
+  access: direct
+  url: http://localhost:8086
+  database: sensors-db
+  user: user
+  password: root
+  isDefault: true
+  editable: true

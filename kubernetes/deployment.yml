@@ -1,0 +1,60 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: sensors
+  labels:
+    name: sensors-pod
+    context: sensors-context
+spec:
+  containers:
+  - name: influxdb
+    image: influxdb:1.7.0
+    imagePullPolicy: "Always"
+    ports:
+    - containerPort: 8086
+    env:
+    - name: INFLUXDB_USER
+      value: root
+    - name: INFLUXDB_USER_PASSWORD
+      value: password
+    - name: INFLUXDB_DB
+      value: "sensors-db"
+    volumeMounts:
+    - name: influx-db-storage
+      mountPath: /var/lib/influxdb
+  - name: mqtt
+    image: naskilla/mosquitto:v1
+    imagePullPolicy: "Always"
+    ports:
+    - containerPort: 1883
+    - containerPort: 9001
+  - name: processingstage
+    image: naskilla/processing:v1
+    imagePullPolicy: "Always"
+    env:
+    - name: INFLUXDB_HOST
+      value: "http://localhost:8086"
+    - name: INFLUXDB_USER
+      value: "root"
+    - name: INFLUXDB_PASSWORD
+      value: "password"
+    - name: INFLUXDB_DB
+      value: "sensors-db"
+    - name: MQTT_HOST
+      value: "tcp://localhost:1883"
+    - name: MQTT_TOPICS
+      value: "host/+/sensor/#"
+  - name: grafana
+    image: markusmann94/grafana:v1
+    imagePullPolicy: "Always"
+    ports:
+    - containerPort: 3000
+    volumeMounts:
+    - name: grafana-storage
+      mountPath: /var/lib/grafana
+  volumes:
+      - name: influx-db-storage
+        emptyDir: {}
+      - name: grafana-storage
+        emptyDir: {}
+
